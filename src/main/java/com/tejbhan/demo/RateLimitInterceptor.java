@@ -11,32 +11,40 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class RateLimitInterceptor implements HandlerInterceptor {
 
-    private final Bucket bucket;
     private static final int RATE_LIMIT = 10;
 
-    public RateLimitInterceptor() {
+    private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
+
+    private Bucket newBucket(String apiKey) {
         Refill refill = Refill.intervally(RATE_LIMIT, Duration.ofMinutes(1));
         Bandwidth limit = Bandwidth.classic(RATE_LIMIT, refill);
-        this.bucket = Bucket.builder()
+        return Bucket.builder()
                 .addLimit(limit)
                 .build();
     }
 
-    public Bucket resolveBucket() {
-        return this.bucket;
-    }
-
-    public void resetBucket() {
-        this.bucket.addTokens(10);
+    public Bucket resolveBucket(String apiKey) {
+        return cache.computeIfAbsent(apiKey, this::newBucket);
     }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        Bucket tokenBucket = resolveBucket();
+
+        String remoteIpAddress = request.getHeader("X-Forwarded-For");
+        if (remoteIpAddress == null || remoteIpAddress.isEmpty()) {
+            remoteIpAddress = request.getRemoteAddr();
+        }
+        if (remoteIpAddress == null || remoteIpAddress.isEmpty()) {
+            response.sendError(HttpStatus.BAD_REQUEST.value(), "Missing Header: remoteIpAddress");
+            return false;
+        }
+        Bucket tokenBucket = resolveBucket(remoteIpAddress);
         ConsumptionProbe probe = tokenBucket.tryConsumeAndReturnRemaining(1);
         if (probe.isConsumed()) {
             response.addHeader("X-Rate-Limit-Remaining", String.valueOf(probe.getRemainingTokens()));
@@ -48,4 +56,5 @@ public class RateLimitInterceptor implements HandlerInterceptor {
             return false;
         }
     }
+
 }
