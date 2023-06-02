@@ -1,4 +1,4 @@
-package com.tejbhan.demo;
+package com.tejbhan.demo.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,4 +16,5 @@ public class Controller {
     ResponseEntity<String> sayBye() {
         return ResponseEntity.ok("Bye Bye");
     }
+
 }

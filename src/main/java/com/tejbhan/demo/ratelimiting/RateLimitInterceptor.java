@@ -1,9 +1,10 @@
-package com.tejbhan.demo;
+package com.tejbhan.demo.ratelimiting;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
 import io.github.bucket4j.Refill;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -17,12 +18,15 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class RateLimitInterceptor implements HandlerInterceptor {
 
-    private static final int RATE_LIMIT = 10;
+    @Value("${rate.limit}")
+    private int RATE_LIMIT;
+    @Value("${time.duration.in.minutes}")
+    private long TIME_DURATION;
 
     private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
 
     private Bucket newBucket(String apiKey) {
-        Refill refill = Refill.intervally(RATE_LIMIT, Duration.ofMinutes(1));
+        Refill refill = Refill.intervally(RATE_LIMIT, Duration.ofMinutes(TIME_DURATION));
         Bandwidth limit = Bandwidth.classic(RATE_LIMIT, refill);
         return Bucket.builder()
                 .addLimit(limit)
