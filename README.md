@@ -18,6 +18,8 @@ This Project uses bucket4j for implementing rate limiting.
 </dependency>
 ```
 
+![rate-limit.png](assets%2Fimages%2Frate-limit.png)
+
 ## Documentation
 
 This project uses springdoc-openapi for documentation.
@@ -35,7 +37,18 @@ springdoc-openapi java library helps to automate the generation of API documenta
 
 ## Rest APIs
 
-It has two APIs to demonstate rate limiting based on IP Address.
+It has two APIs to demonstrate rate limiting based on IP Address.
+When request quota is consumed, it will throw error with 429 code which is Too many requests.
+
+```
+{
+"timestamp": "2023-06-02T09:33:08.079+00:00",
+"status": 429,
+"error": "Too Many Requests",
+"message": "",
+"path": "/hi"
+}
+```
 
 ## Configuration
 
@@ -46,6 +59,6 @@ rate.limit = 3
 time.duration.in.minutes = 1
 ```
 1. Rate limit decides how much API requests it will accept for a particular IP Address.
-2. Time duration decides the timeframe in which the limit will be resetted.
+2. Time duration decides the timeframe in which the limit will be reset.
 
 
