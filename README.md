@@ -1,6 +1,16 @@
 # Spring Boot Rate Limiting - Bucket4j
 Spring boot project to implement IP Address based rate limiting on rest APIs by using Bucket4j.
 
+## Runing and Testing
+**IDE:** 
+Open project in any IDE and run as a spring boot Project. <br>
+**Command line:** 
+Open terminal and loacte to pom.xml file directory and type command - 
+`mvn dpring-boot:run`
+
+Use the following url to test the Application:
+http://localhost:8080/swagger-ui/index.html
+
 ## Rate Limiting
 Rate limiting is a technique to limit network traffic to prevent users from exhausting system resources.
 Rate limiting makes it harder for malicious actors to overburden the system and cause attacks like Denial of Service (DoS).
